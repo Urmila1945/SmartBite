@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiteBot - Your Recipe Chatbot</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            --color-sage-green: #8FBC8F;
+            --color-beige: #F5F5DC;
+            --color-off-white: #FCFCF4;
+            --color-dark-grey: #36454F;
+            --color-darker-sage-green: #7B9F7B;
+        }
+
+        .bg-sage-green { background-color: var(--color-sage-green); }
+        .bg-beige { background-color: var(--color-beige); }
+        .bg-off-white { background-color: var(--color-off-white); }
+        .text-dark-grey { color: var(--color-dark-grey); }
+        .text-sage-green { color: var(--color-sage-green); }
+        .hover\:bg-sage-green-dark:hover { background-color: var(--color-darker-sage-green); }
+
+        .chatbot-container {
+            background-color: var(--color-off-white);
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+            border: 1px solid #e0e0e0;
+            width: 100%;
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            min-height: 70vh; /* Ensure some height for the chat window */
+        }
+
+        .chat-window {
+            flex-grow: 1;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            background-color: var(--color-beige);
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .chat-message {
+            max-width: 80%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            word-wrap: break-word;
+        }
+        .chat-message.user {
+            background-color: var(--color-sage-green);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 0;
+        }
+        .chat-message.bot {
+            background-color: var(--color-off-white);
+            color: var(--color-dark-grey);
+            align-self: flex-start;
+            border: 1px solid #d1d5db;
+            border-bottom-left-radius: 0;
+        }
+        .chat-message.bot strong {
+            color: var(--color-sage-green);
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .chat-input-area input {
+            flex-grow: 1;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            color: var(--color-dark-grey);
+            background-color: var(--color-off-white);
+        }
+        .chat-input-area button {
+            background-color: var(--color-sage-green);
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+        .chat-input-area button:hover {
+            background-color: var(--color-darker-sage-green);
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--color-sage-green);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-beige text-dark-grey min-h-screen flex flex-col">
+
+    <!-- Header for Chatbot Page -->
+    <header class="bg-off-white shadow-md py-4 sticky top-0 z-50 rounded-b-lg">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <a href="smartbite-health-tracker.html" class="text-dark-grey hover:text-sage-green transition-colors duration-300 px-3 py-2 rounded-md">
+                &larr; Back to Tracker
+            </a>
+            <span class="text-3xl font-bold text-sage-green">BiteBot</span>
+            <div></div> <!-- Placeholder for spacing -->
+        </div>
+    </header>
+
+    <main class="flex-grow flex flex-col items-center justify-center py-8 px-4">
+        <div class="chatbot-container">
+            <h2 class="text-3xl font-bold text-sage-green text-center mb-4">Your Recipe Chatbot</h2>
+            <p class="text-center italic text-dark-grey mb-4">"Stirring up cravings, one chat at a time."</p>
+
+            <div id="chat-window" class="chat-window">
+                <div class="chat-message bot">Hello! I'm BiteBot. Tell me what ingredients you have, and I'll suggest a healthy and tasty recipe with macros!</div>
+            </div>
+
+            <div class="chat-input-area">
+                <input type="text" id="user-input" placeholder="e.g., milk, oats, banana" class="input-field">
+                <button id="send-button">Send</button>
+            </div>
+            <div id="loading-spinner" class="hidden mt-4 text-center">
+                <div class="loading-spinner"></div>
+                <p class="text-sm text-gray-500 mt-2">BiteBot is thinking...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer for Chatbot Page -->
+    <footer class="bg-dark-grey text-off-white py-6 mt-auto rounded-t-lg">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2023 SmartBite. All rights reserved.</p>
+            <div class="flex justify-center space-x-4 mt-2">
+                <a href="#" class="hover:text-sage-green transition-colors duration-300">Privacy Policy</a>
+                <a href="#" class="hover:text-sage-green transition-colors duration-300">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom Modal for Messages (replaces alert()) -->
+    <div id="custom-modal" class="fixed inset-0 bg-dark-grey bg-opacity-75 flex items-center justify-center hidden z-50">
+        <div class="bg-off-white p-6 rounded-lg shadow-xl text-center max-w-sm mx-auto">
+            <p id="modal-message" class="text-dark-grey text-lg mb-4"></p>
+            <button id="modal-close-button" class="bg-sage-green text-white px-4 py-2 rounded-full hover:bg-sage-green-dark transition-colors duration-300">OK</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatWindow = document.getElementById('chat-window');
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+            const loadingSpinner = document.getElementById('loading-spinner');
+
+            // Custom Modal Elements
+            const customModal = document.getElementById('custom-modal');
+            const modalMessage = document.getElementById('modal-message');
+            const modalCloseButton = document.getElementById('modal-close-button');
+
+            function showCustomModal(message) {
+                modalMessage.textContent = message;
+                customModal.classList.remove('hidden');
+            }
+
+            modalCloseButton.addEventListener('click', () => {
+                customModal.classList.add('hidden');
+            });
+
+            async function sendMessage() {
+                const userText = userInput.value.trim();
+                if (userText === '') return;
+
+                // Display user message
+                const userMessageDiv = document.createElement('div');
+                userMessageDiv.classList.add('chat-message', 'user');
+                userMessageDiv.textContent = userText;
+                chatWindow.appendChild(userMessageDiv);
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+
+                userInput.value = ''; // Clear input
+
+                // Show loading spinner
+                loadingSpinner.classList.remove('hidden');
+                sendButton.disabled = true;
+                userInput.disabled = true;
+
+                try {
+                    const prompt = `Generate a healthy and tasty recipe using the following ingredients: ${userText}. 
+                                    Provide the recipe in a structured JSON format including:
+                                    - recipeName (string)
+                                    - ingredients (array of strings)
+                                    - instructions (array of strings)
+                                    - macros (object with calories, protein, carbs, fats - all strings with units, e.g., "300 kcal", "20g", "40g", "15g")
+                                    If you cannot generate a recipe, return an empty object {}.`;
+
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = {
+                        contents: chatHistory,
+                        generationConfig: {
+                            responseMimeType: "application/json",
+                            responseSchema: {
+                                type: "OBJECT",
+                                properties: {
+                                    "recipeName": { "type": "STRING" },
+                                    "ingredients": {
+                                        "type": "ARRAY",
+                                        "items": { "type": "STRING" }
+                                    },
+                                    "instructions": {
+                                        "type": "ARRAY",
+                                        "items": { "type": "STRING" }
+                                    },
+                                    "macros": {
+                                        "type": "OBJECT",
+                                        "properties": {
+                                            "calories": { "type": "STRING" },
+                                            "protein": { "type": "STRING" },
+                                            "carbs": { "type": "STRING" },
+                                            "fats": { "type": "STRING" }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    };
+                    const apiKey = "";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+
+                    let botResponseText = "Sorry, I couldn't generate a recipe with those ingredients. Please try different ones!";
+                    
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0 &&
+                        typeof result.candidates[0].content.parts[0].text === 'string') {
+                        
+                        const jsonString = result.candidates[0].content.parts[0].text;
+                        try {
+                            const recipeData = JSON.parse(jsonString);
+                            if (recipeData && recipeData.recipeName) {
+                                botResponseText = `<strong>${recipeData.recipeName}</strong>\n\n` +
+                                                  `Ingredients:\n- ${recipeData.ingredients.join('\n- ')}\n\n` +
+                                                  `Instructions:\n${recipeData.instructions.map((inst, idx) => `${idx + 1}. ${inst}`).join('\n')}\n\n` +
+                                                  `Macros:\n` +
+                                                  `  Calories: ${recipeData.macros.calories}\n` +
+                                                  `  Protein: ${recipeData.macros.protein}\n` +
+                                                  `  Carbs: ${recipeData.macros.carbs}\n` +
+                                                  `  Fats: ${recipeData.macros.fats}`;
+                            } else {
+                                console.warn("LLM returned an empty or incomplete recipe object:", recipeData);
+                                botResponseText = "BiteBot generated an incomplete recipe. Please try again or rephrase your request.";
+                            }
+                        } catch (parseError) {
+                            console.error("Error parsing recipe JSON:", parseError);
+                            console.error("Raw LLM response text:", jsonString);
+                            botResponseText = "BiteBot had trouble understanding the recipe. Please try again or rephrase your request.";
+                        }
+                    } else {
+                        console.log("No valid response structure or text from LLM:", result);
+                    }
+
+                    const botMessageDiv = document.createElement('div');
+                    botMessageDiv.classList.add('chat-message', 'bot');
+                    botMessageDiv.innerHTML = botResponseText.replace(/\n/g, '<br>');
+                    chatWindow.appendChild(botMessageDiv);
+                    chatWindow.scrollTop = chatWindow.scrollHeight;
+
+                } catch (error) {
+                    console.error("Error fetching recipe from LLM:", error);
+                    showCustomModal("BiteBot is currently unavailable. Please try again later.");
+                    const errorMessageDiv = document.createElement('div');
+                    errorMessageDiv.classList.add('chat-message', 'bot');
+                    errorMessageDiv.textContent = "Oops! Something went wrong. Please try again.";
+                    chatWindow.appendChild(errorMessageDiv);
+                    chatWindow.scrollTop = chatWindow.scrollHeight;
+                } finally {
+                    loadingSpinner.classList.add('hidden');
+                    sendButton.disabled = false;
+                    userInput.disabled = false;
+                    userInput.focus();
+                }
+            }
+
+            sendButton.addEventListener('click', sendMessage);
+            userInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

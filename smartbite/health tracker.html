@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartBite - Health Tracker</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom CSS variables for your color palette */
+        body {
+            font-family: 'Inter', sans-serif;
+            --color-sage-green: #8FBC8F;
+            --color-beige: #F5F5DC;
+            --color-off-white: #FCFCF4;
+            --color-dark-grey: #36454F;
+            --color-darker-sage-green: #7B9F7B;
+            --color-dark-beige: #E0D8C4; /* A slightly darker beige */
+        }
+
+        /* Applying custom colors using Tailwind utility classes */
+        .bg-sage-green { background-color: var(--color-sage-green); }
+        .bg-beige { background-color: var(--color-beige); }
+        .bg-off-white { background-color: var(--color-off-white); }
+        .bg-dark-beige { background-color: var(--color-dark-beige); }
+        .text-dark-grey { color: var(--color-dark-grey); }
+        .text-sage-green { color: var(--color-sage-green); }
+        .border-sage-green { border-color: var(--color-sage-green); }
+
+        /* Hover effects for buttons and links */
+        .hover\:bg-sage-green-dark:hover { background-color: var(--color-darker-sage-green); }
+        .hover\:text-sage-green-dark:hover { color: var(--color-darker-sage-green); }
+
+        /* Specific styling for the mobile menu (initially hidden) */
+        .mobile-menu {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            background-color: var(--color-off-white);
+            position: absolute;
+            top: 100%;
+            left: 0;
+            padding: 1rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 0 0 0.5rem 0.5rem;
+        }
+        .mobile-menu.active {
+            display: flex;
+        }
+
+        /* Form specific styles (kept for general input fields if any remain) */
+        .input-field {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            color: var(--color-dark-grey);
+            background-color: var(--color-off-white);
+            transition: border-color 0.3s ease;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--color-sage-green);
+            box-shadow: 0 0 0 2px rgba(143, 188, 143, 0.3); /* Sage green shadow */
+        }
+
+        /* Circular Progress Bar Styles */
+        .circular-progress-container {
+            position: relative;
+            width: 160px; /* Smaller size for the circle */
+            height: 160px;
+            margin: 0 auto 1rem;
+        }
+
+        .circular-progress-container svg {
+            transform: rotate(-90deg); /* Start from top */
+        }
+
+        .circular-progress-container circle {
+            transition: stroke-dashoffset 0.3s ease-in-out;
+        }
+
+        .circular-progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .circular-progress-text .goal-value {
+            font-size: 2.25rem; /* text-4xl */
+            font-weight: 700; /* font-bold */
+            color: var(--color-dark-grey);
+        }
+        .circular-progress-text .goal-label {
+            font-size: 0.875rem; /* text-sm */
+            color: var(--color-dark-grey);
+        }
+        .circular-progress-text .current-value {
+            font-size: 1.5rem; /* text-2xl */
+            font-weight: 600; /* font-semibold */
+            color: var(--color-sage-green);
+            margin-top: 0.25rem;
+        }
+        .circular-progress-text .achieved-label {
+            font-size: 0.75rem; /* text-xs */
+            color: var(--color-dark-grey);
+        }
+
+        .increment-button {
+            background-color: var(--color-sage-green);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px; /* full rounded */
+            font-size: 1.5rem; /* text-2xl */
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .increment-button:hover {
+            background-color: var(--color-darker-sage-green);
+        }
+        
+        /* BiteBot Icon Styles (for main page) */
+        .bitebot-icon-wrapper {
+            position: relative; /* Needed for tooltip positioning */
+            display: inline-block; /* To make it wrap around the button */
+        }
+
+        .bitebot-icon-link {
+            background-color: var(--color-sage-green);
+            color: white;
+            width: 40px; /* Smaller icon size */
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            text-decoration: none; /* Remove underline from link */
+            margin-left: 1rem; /* Space from profile link */
+        }
+        .bitebot-icon-link:hover {
+            background-color: var(--color-darker-sage-green);
+            transform: scale(1.05);
+        }
+        .bitebot-icon-link svg {
+            width: 24px; /* Adjust SVG size */
+            height: 24px;
+        }
+
+        .bitebot-tooltip {
+            position: absolute;
+            top: 100%; /* Position below the icon */
+            left: 50%;
+            transform: translateX(-50%); /* Center the tooltip */
+            background-color: rgba(0, 0, 0, 0.75);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            white-space: normal; /* Allow text to wrap */
+            max-width: 150px; /* Set max-width to force two lines */
+            text-align: center; /* Center the text within the tooltip */
+            opacity: 0; /* Hidden by default */
+            visibility: hidden; /* Hidden by default */
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 10; /* Ensure it's above other elements */
+            margin-top: 0.5rem; /* Space between icon and tooltip */
+        }
+
+        .bitebot-icon-wrapper:hover .bitebot-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+
+        .daily-quote-box {
+            background-color: var(--color-off-white);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .daily-quote-text {
+            font-size: 1.125rem; /* text-lg */
+            font-style: italic;
+            color: var(--color-dark-grey);
+            margin-bottom: 0.5rem;
+        }
+        .daily-quote-author {
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 500;
+            color: var(--color-sage-green);
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--color-sage-green);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-beige text-dark-grey min-h-screen flex flex-col">
+
+    <!-- Header Section -->
+    <header class="bg-off-white shadow-md py-4 sticky top-0 z-50 rounded-b-lg">
+        <div class="container mx-auto px-4 flex justify-between items-center relative">
+            <!-- Logo Image in top-left corner -->
+            <a href="#" class="flex items-center">
+                <img src="logo.png" alt="SmartBite Logo" class="h-16 mr-2 rounded-full">
+            </a>
+
+            <!-- SmartBite text (centered for desktop) -->
+            <nav class="hidden md:flex items-center space-x-6">
+                <span class="text-3xl font-bold text-sage-green">SmartBite</span>
+            </nav>
+
+            <!-- Navigation Links and BiteBot Icon (for desktop) -->
+            <div class="hidden md:flex items-center space-x-4">
+                <a href="#" class="text-dark-grey hover:text-sage-green transition-colors duration-300 px-3 py-2 rounded-md">Dashboard</a>
+                <a href="#" class="text-dark-grey hover:text-sage-green transition-colors duration-300 px-3 py-2 rounded-md">Goals</a>
+                <a href="#" class="text-dark-grey hover:text-sage-green transition-colors duration-300 px-3 py-2 rounded-md">History</a>
+                <a href="#" class="text-dark-grey hover:text-sage-green transition-colors duration-300 px-3 py-2 rounded-md">Profile</a>
+                <!-- BiteBot Icon Link with Tooltip -->
+                <div class="bitebot-icon-wrapper">
+                    <a href="bitebot-chatbot.html" class="bitebot-icon-link">
+                        <!-- Robot icon SVG -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                            <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 6a.75.75 0 0 0-1.5 0v6a.75.75 0 0 0 .75.75h2.25a.75.75 0 0 0 0-1.5h-1.5V6ZM10.5 16.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0Z" clip-rule="evenodd" />
+                        </svg>
+                    </a>
+                    <div class="bitebot-tooltip">Hey, I am Bitebot, <br> Your recipe buddy !!!</div>
+                </div>
+            </div>
+
+            <!-- Mobile Menu Button (Hamburger Icon) -->
+            <button id="mobile-menu-button" class="md:hidden text-dark-grey focus:outline-none">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                </svg>
+            </button>
+
+            <!-- Mobile Menu Content (initially hidden, toggled by JS) -->
+            <div id="mobile-menu" class="mobile-menu md:hidden">
+                <div class="mt-4 pt-4 border-t border-gray-200 flex flex-col space-y-3 px-4">
+                    <a href="#" class="block text-dark-grey hover:text-sage-green transition-colors duration-300 px-3 py-2 rounded-md">Dashboard</a>
+                    <a href="#" class="block text-dark-grey hover:text-sage-green transition-colors duration-300 px-3 py-2 rounded-md">Goals</a>
+                    <a href="#" class="block text-dark-grey hover:text-sage-green transition-colors duration-300 px-3 py-2 rounded-md">History</a>
+                    <a href="#" class="block text-dark-grey hover:text-sage-green transition-colors duration-300 px-3 py-2 rounded-md">Profile</a>
+                    <a href="bitebot-chatbot.html" class="block text-dark-grey hover:text-sage-green transition-colors duration-300 px-3 py-2 rounded-md">BiteBot</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content: Health Tracker Dashboard -->
+    <main class="flex-grow flex flex-col items-center justify-center py-12 px-4">
+        <div class="bg-off-white p-8 md:p-10 rounded-lg shadow-xl w-full max-w-2xl border border-gray-200">
+            <h2 class="text-3xl font-bold text-center text-dark-grey mb-8">Your Daily Health Tracker</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Steps Tracker -->
+                <div class="bg-beige p-6 rounded-lg shadow-md border border-gray-200 text-center">
+                    <h3 class="text-xl font-semibold text-dark-grey mb-4">Daily Steps Goal</h3>
+                    
+                    <div class="circular-progress-container">
+                        <svg class="w-full h-full" viewBox="0 0 100 100">
+                            <!-- Background circle -->
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="#e0e0e0" stroke-width="10"></circle>
+                            <!-- Progress circle -->
+                            <circle id="steps-progress-circle" cx="50" cy="50" r="45" fill="none" stroke="var(--color-sage-green)" stroke-width="10" stroke-linecap="round" style="stroke-dasharray: 282.7; stroke-dashoffset: 282.7;"></circle>
+                        </svg>
+                        <div class="circular-progress-text">
+                            <span id="steps-goal-display" class="goal-value">0</span>
+                            <span class="goal-label">steps goal</span>
+                            <br>
+                            <span id="current-steps" class="current-value">0</span>
+                            <span class="achieved-label">achieved</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center space-x-4 mt-4">
+                        <button id="decrement-steps-goal" class="increment-button">-500</button>
+                        <button id="increment-steps-goal" class="increment-button">+500</button>
+                    </div>
+                </div>
+
+                <!-- Water Intake Tracker -->
+                <div class="bg-beige p-6 rounded-lg shadow-md border border-gray-200 text-center">
+                    <h3 class="text-xl font-semibold text-dark-grey mb-4">Daily Water Goal</h3>
+                    
+                    <div class="circular-progress-container">
+                        <svg class="w-full h-full" viewBox="0 0 100 100">
+                            <!-- Background circle -->
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="#e0e0e0" stroke-width="10"></circle>
+                            <!-- Progress circle -->
+                            <circle id="water-progress-circle" cx="50" cy="50" r="45" fill="none" stroke="var(--color-sage-green)" stroke-width="10" stroke-linecap="round" style="stroke-dasharray: 282.7; stroke-dashoffset: 282.7;"></circle>
+                        </svg>
+                        <div class="circular-progress-text">
+                            <span id="water-goal-display" class="goal-value">0</span>
+                            <span class="goal-label">Liters goal</span>
+                            <br>
+                            <span id="current-water" class="current-value">0</span>
+                            <span class="achieved-label">achieved</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center space-x-4 mt-4">
+                        <button id="decrement-water-goal" class="increment-button">-1L</button>
+                        <button id="increment-water-goal" class="increment-button">+1L</button>
+                    </div>
+                </div>
+
+                <!-- Sleep Monitor -->
+                <div class="bg-beige p-6 rounded-lg shadow-md border border-gray-200 text-center">
+                    <h3 class="text-xl font-semibold text-dark-grey mb-4">Sleep Cycle Reminder</h3>
+                    <div class="space-y-3 text-left mb-4">
+                        <div>
+                            <label for="bedtime-input" class="block text-dark-grey text-sm font-medium mb-1">Bedtime:</label>
+                            <input type="time" id="bedtime-input" class="input-field" value="23:00">
+                        </div>
+                        <div>
+                            <label for="wakeuptime-input" class="block text-dark-grey text-sm font-medium mb-1">Wake-up Time:</label>
+                            <input type="time" id="wakeuptime-input" class="input-field" value="05:00">
+                        </div>
+                    </div>
+                    <button id="set-sleep-cycle-button" class="w-full bg-sage-green text-white px-4 py-2 rounded-full hover:bg-sage-green-dark transition-colors duration-300 shadow-md">Set Sleep Cycle</button>
+                    <p id="sleep-cycle-display" class="text-sm text-dark-grey mt-3">Sleep Cycle: Not set</p>
+                </div>
+
+                <!-- Daily Motivational Quote -->
+                <div class="daily-quote-box bg-beige p-6 rounded-lg shadow-md border border-gray-200">
+                    <h3 class="text-xl font-semibold text-dark-grey mb-4">Daily Motivation</h3>
+                    <p id="daily-quote-text" class="daily-quote-text">Loading quote...</p>
+                    <p id="daily-quote-author" class="daily-quote-author"></p>
+                </div>
+            </div>
+
+            <div class="text-center mt-8">
+                <button id="reset-daily-data" class="bg-dark-beige text-dark-grey px-6 py-2 rounded-full hover:bg-gray-300 transition-colors duration-300 shadow-md">Reset All Achieved Data</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="bg-dark-grey text-off-white py-6 mt-auto rounded-t-lg">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <!-- Logo on the left -->
+            <a href="#" class="flex items-center">
+                <img src="logo.png" alt="SmartBite Logo" class="h-12 mr-2 rounded-full">
+            </a>
+            <!-- Copyright text in the middle -->
+            <p>&copy; 2023 SmartBite. All rights reserved.</p>
+            <!-- Social links or other footer navigation on the right -->
+            <div class="flex space-x-4">
+                <a href="#" class="hover:text-sage-green transition-colors duration-300">Privacy Policy</a>
+                <a href="#" class="hover:text-sage-green transition-colors duration-300">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom Modal for Messages (replaces alert()) -->
+    <div id="custom-modal" class="fixed inset-0 bg-dark-grey bg-opacity-75 flex items-center justify-center hidden z-50">
+        <div class="bg-off-white p-6 rounded-lg shadow-xl text-center max-w-sm mx-auto">
+            <p id="modal-message" class="text-dark-grey text-lg mb-4"></p>
+            <button id="modal-close-button" class="bg-sage-green text-white px-4 py-2 rounded-full hover:bg-sage-green-dark transition-colors duration-300">OK</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile Menu Toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('active');
+                });
+            }
+
+            // Health Tracker Elements
+            // Steps
+            const stepsGoalDisplay = document.getElementById('steps-goal-display');
+            const currentStepsDisplay = document.getElementById('current-steps');
+            const incrementStepsButton = document.getElementById('increment-steps-goal');
+            const decrementStepsButton = document.getElementById('decrement-steps-goal');
+            const stepsProgressCircle = document.getElementById('steps-progress-circle');
+
+            // Water
+            const waterGoalDisplay = document.getElementById('water-goal-display');
+            const currentWaterDisplay = document.getElementById('current-water');
+            const incrementWaterButton = document.getElementById('increment-water-goal');
+            const decrementWaterButton = document.getElementById('decrement-water-goal');
+            const waterProgressCircle = document.getElementById('water-progress-circle');
+
+            // Sleep Monitor Elements
+            const bedtimeInput = document.getElementById('bedtime-input');
+            const wakeuptimeInput = document.getElementById('wakeuptime-input');
+            const setSleepCycleButton = document = document.getElementById('set-sleep-cycle-button');
+            const sleepCycleDisplay = document.getElementById('sleep-cycle-display');
+
+            const resetDailyDataButton = document.getElementById('reset-daily-data');
+
+            // Daily Quote
+            const dailyQuoteText = document.getElementById('daily-quote-text');
+            const dailyQuoteAuthor = document.getElementById('daily-quote-author');
+            const motivationalQuotes = [
+                { quote: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+                { quote: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
+                { quote: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
+                { quote: "It always seems impossible until it's done.", author: "Nelson Mandela" },
+                { quote: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
+                { quote: "The best way to predict the future is to create it.", author: "Peter Drucker" },
+                { quote: "Your time is limited, don't waste it living someone else's life.", author: "Steve Jobs" },
+                { quote: "The mind is everything. What you think you become.", author: "Buddha" },
+                { quote: "Strive not to be a success, but rather to be of value.", author: "Albert Einstein" },
+                { quote: "The only limit to our realization of tomorrow will be our doubts of today.", author: "Franklin D. Roosevelt" }
+            ];
+
+            // Custom Modal Elements
+            const customModal = document.getElementById('custom-modal');
+            const modalMessage = document.getElementById('modal-message');
+            const modalCloseButton = document.getElementById('modal-close-button');
+
+            // Initial Values and Constants
+            let stepsGoal = 10000; // Default steps goal
+            const MIN_STEPS = 500;
+            const MAX_STEPS = 50000;
+            const STEPS_INCREMENT = 500;
+
+            let waterGoal = 2; // Default water goal in Liters
+            const MIN_WATER = 1;
+            const MAX_WATER = 20;
+            const WATER_INCREMENT = 1; // In Liters
+
+            const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 45; // 2 * PI * radius (radius is 45 from SVG)
+
+            // Sleep Cycle variables
+            let bedtime = '23:00';
+            let wakeuptime = '05:00';
+
+            // --- Custom Modal Functions ---
+            function showCustomModal(message) {
+                modalMessage.textContent = message;
+                customModal.classList.remove('hidden');
+            }
+
+            modalCloseButton.addEventListener('click', () => {
+                customModal.classList.add('hidden');
+            });
+
+            // --- Data Loading and Saving ---
+            function loadDailyData() {
+                const savedSteps = localStorage.getItem('smartbite_daily_steps');
+                const savedWater = localStorage.getItem('smartbite_daily_water');
+                const savedStepsGoal = localStorage.getItem('smartbite_steps_goal');
+                const savedWaterGoal = localStorage.getItem('smartbite_water_goal');
+                const savedSleepCycle = localStorage.getItem('smartbite_sleep_cycle');
+
+                currentStepsDisplay.textContent = savedSteps ? parseInt(savedSteps) : 0;
+                currentWaterDisplay.textContent = savedWater ? parseInt(savedWater) : 0;
+                
+                stepsGoal = savedStepsGoal ? parseInt(savedStepsGoal) : 10000;
+                waterGoal = savedWaterGoal ? parseInt(savedWaterGoal) : 2;
+
+                if (savedSleepCycle) {
+                    const cycle = JSON.parse(savedSleepCycle);
+                    bedtime = cycle.bedtime;
+                    wakeuptime = cycle.wakeuptime;
+                    bedtimeInput.value = bedtime;
+                    wakeuptimeInput.value = wakeuptime;
+                    sleepCycleDisplay.textContent = `Sleep Cycle: ${bedtime} to ${wakeuptime}`;
+                }
+
+                updateStepsDisplay();
+                updateWaterDisplay();
+            }
+
+            function saveDailyData() {
+                localStorage.setItem('smartbite_daily_steps', currentStepsDisplay.textContent);
+                localStorage.setItem('smartbite_daily_water', currentWaterDisplay.textContent);
+                localStorage.setItem('smartbite_steps_goal', stepsGoal);
+                localStorage.setItem('smartbite_water_goal', waterGoal);
+                localStorage.setItem('smartbite_sleep_cycle', JSON.stringify({ bedtime, wakeuptime }));
+            }
+
+            // --- Steps Tracker Functions ---
+            function updateStepsDisplay() {
+                stepsGoalDisplay.textContent = stepsGoal;
+                const progress = Math.min(1, parseInt(currentStepsDisplay.textContent) / stepsGoal);
+                const offset = CIRCLE_CIRCUMFERENCE * (1 - progress);
+                stepsProgressCircle.style.strokeDashoffset = offset;
+                saveDailyData();
+            }
+
+            incrementStepsButton.addEventListener('click', function() {
+                if (stepsGoal + STEPS_INCREMENT <= MAX_STEPS) {
+                    stepsGoal += STEPS_INCREMENT;
+                    updateStepsDisplay();
+                } else {
+                    showCustomModal(`Maximum steps goal is ${MAX_STEPS}.`);
+                }
+            });
+
+            decrementStepsButton.addEventListener('click', function() {
+                if (stepsGoal - STEPS_INCREMENT >= MIN_STEPS) {
+                    stepsGoal -= STEPS_INCREMENT;
+                    updateStepsDisplay();
+                } else {
+                    showCustomModal(`Minimum steps goal is ${MIN_STEPS}.`);
+                }
+            });
+
+            // --- Water Tracker Functions ---
+            function updateWaterDisplay() {
+                waterGoalDisplay.textContent = waterGoal;
+                const progress = Math.min(1, parseInt(currentWaterDisplay.textContent) / (waterGoal * 1000));
+                const offset = CIRCLE_CIRCUMFERENCE * (1 - progress);
+                waterProgressCircle.style.strokeDashoffset = offset;
+                saveDailyData();
+            }
+
+            incrementWaterButton.addEventListener('click', function() {
+                if (waterGoal + WATER_INCREMENT <= MAX_WATER) {
+                    waterGoal += WATER_INCREMENT;
+                    updateWaterDisplay();
+                } else {
+                    showCustomModal(`Maximum water goal is ${MAX_WATER} Liters.`);
+                }
+            });
+
+            decrementWaterButton.addEventListener('click', function() {
+                if (waterGoal - WATER_INCREMENT >= MIN_WATER) {
+                    waterGoal -= WATER_INCREMENT;
+                    updateWaterDisplay();
+                } else {
+                    showCustomModal(`Minimum water goal is ${MIN_WATER} Liter.`);
+                }
+            });
+
+            // --- Sleep Monitor Functions (Reminder) ---
+            setSleepCycleButton.addEventListener('click', function() {
+                bedtime = bedtimeInput.value;
+                wakeuptime = wakeuptimeInput.value;
+
+                if (!bedtime || !wakeuptime) {
+                    showCustomModal('Please set a bedtime and wake-up time.');
+                    return;
+                }
+
+                sleepCycleDisplay.textContent = `Sleep Cycle: ${bedtime} to ${wakeuptime}`;
+                saveDailyData();
+                showCustomModal(`Sleep cycle set: ${bedtime} to ${wakeuptime}.`);
+                scheduleSleepReminder(); // Schedule or reschedule the reminder
+            });
+
+            function getSleepReminderMessage() {
+                return `It's ${bedtime}, time to wind down and get some healthy sleep!`;
+            }
+
+            let sleepReminderInterval; // To store the interval ID
+
+            function scheduleSleepReminder() {
+                // Clear any existing interval to prevent multiple reminders
+                if (sleepReminderInterval) {
+                    clearInterval(sleepReminderInterval);
+                }
+
+                const [bedHour, bedMinute] = bedtime.split(':').map(Number);
+
+                sleepReminderInterval = setInterval(() => {
+                    const now = new Date();
+                    const currentHour = now.getHours();
+                    const currentMinute = now.getMinutes();
+
+                    // Check if it's the exact bedtime
+                    if (currentHour === bedHour && currentMinute === bedMinute) {
+                        showCustomModal(getSleepReminderMessage());
+                        // Optional: Clear interval after showing for today, or let it run daily
+                        // clearInterval(sleepReminderInterval);
+                    }
+                }, 60 * 1000); // Check every minute
+                console.log(`Sleep reminder scheduled for ${bedtime}.`);
+            }
+
+            // --- Daily Quote Functions ---
+            function getTodayString() {
+                const today = new Date();
+                return today.toDateString();
+            }
+
+            function getDailyQuote() {
+                const todayStr = getTodayString();
+                let lastQuoteDate = localStorage.getItem('smartbite_last_quote_date');
+                let savedQuoteIndex = localStorage.getItem('smartbite_quote_index');
+
+                let quoteIndex;
+                if (lastQuoteDate === todayStr && savedQuoteIndex !== null) {
+                    quoteIndex = parseInt(savedQuoteIndex);
+                } else {
+                    quoteIndex = Math.floor(Math.random() * motivationalQuotes.length);
+                    localStorage.setItem('smartbite_last_quote_date', todayStr);
+                    localStorage.setItem('smartbite_quote_index', quoteIndex);
+                }
+                dailyQuoteText.textContent = `"${motivationalQuotes[quoteIndex].quote}"`;
+                dailyQuoteAuthor.textContent = `- ${motivationalQuotes[quoteIndex].author}`;
+            }
+
+            // --- Reset All Achieved Data Functionality ---
+            resetDailyDataButton.addEventListener('click', function() {
+                currentStepsDisplay.textContent = 0;
+                currentWaterDisplay.textContent = 0;
+                saveDailyData();
+                updateStepsDisplay();
+                updateWaterDisplay();
+                showCustomModal('All achieved daily health data has been reset.');
+            });
+
+            // Initial load of data and quote
+            loadDailyData();
+            getDailyQuote(); // Display today's quote on load
+            scheduleSleepReminder(); // Schedule the reminder on load
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartBite - Your Health, Simplified</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom CSS variables for your color palette */
+        body {
+            font-family: 'Inter', sans-serif;
+            --color-sage-green: #8FBC8F;
+            --color-beige: #F5F5DC;
+            --color-off-white: #FCFCF4;
+            --color-dark-grey: #36454F;
+            --color-darker-sage-green: #7B9F7B;
+        }
+
+        /* Applying custom colors using Tailwind utility classes */
+        .bg-sage-green { background-color: var(--color-sage-green); }
+        .bg-beige { background-color: var(--color-beige); }
+        .bg-off-white { background-color: var(--color-off-white); }
+        .text-dark-grey { color: var(--color-dark-grey); }
+        .text-sage-green { color: var(--color-sage-green); }
+        .border-sage-green { border-color: var(--color-sage-green); }
+
+        /* Hover effects for buttons and links */
+        .hover\:bg-sage-green-dark:hover { background-color: var(--color-darker-sage-green); }
+        .hover\:text-sage-green-dark:hover { color: var(--color-darker-sage-green); }
+
+        /* Specific styling for the mobile menu (initially hidden) */
+        .mobile-menu {
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            width: 100%;
+            background-color: var(--color-off-white);
+            position: absolute;
+            top: 100%; /* Position below the header */
+            left: 0;
+            padding: 1rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 0 0 0.5rem 0.5rem;
+        }
+        .mobile-menu.active {
+            display: flex; /* Show when active */
+        }
+    </style>
+</head>
+<body class="bg-beige text-dark-grey min-h-screen flex flex-col">
+
+    <!-- Header Section -->
+    <header class="bg-off-white shadow-md py-4 sticky top-0 z-50 rounded-b-lg">
+        <div class="container mx-auto px-4 flex justify-between items-center relative">
+            <!-- Logo Image in top-left corner -->
+            <a href="#" class="flex items-center">
+                <!-- Ensure 'logo.jpg' is in the same directory as this HTML file for it to display -->
+                <img src="logo.png" alt="SmartBite Logo" class="h-16 mr-2 rounded-full"> <!-- Increased height to h-16 -->
+            </a>
+
+            <!-- SmartBite text and Main Navigation (for desktop) -->
+            <nav class="hidden md:flex items-center space-x-6">
+                <span class="text-3xl font-bold text-sage-green">SmartBite</span> <!-- Increased text size to text-3xl -->
+                <!-- Removed Home, About, Contact links -->
+            </nav>
+
+            <!-- Login/Sign Up Buttons (for desktop) -->
+            <div class="hidden md:flex space-x-4">
+                <button class="bg-sage-green text-white px-6 py-2 rounded-full hover:bg-sage-green-dark transition-colors duration-300 shadow-md">
+                    Sign Up
+                </button>
+                <button class="border border-sage-green text-sage-green px-6 py-2 rounded-full hover:bg-sage-green hover:text-white transition-colors duration-300 shadow-md">
+                    Sign In
+                </button>
+            </div>
+
+            <!-- Mobile Menu Button (Hamburger Icon) -->
+            <button id="mobile-menu-button" class="md:hidden text-dark-grey focus:outline-none">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                </svg>
+            </button>
+
+            <!-- Mobile Menu Content (initially hidden, toggled by JS) -->
+            <div id="mobile-menu" class="mobile-menu md:hidden">
+                <!-- Removed Home, About, Contact links from mobile menu -->
+                <div class="mt-4 pt-4 border-t border-gray-200 flex flex-col space-y-3 px-4">
+                    <button class="bg-sage-green text-white px-6 py-2 rounded-full hover:bg-sage-green-dark transition-colors duration-300 shadow-md">
+                        Sign Up
+                    </button>
+                    <button class="border border-sage-green text-sage-green px-6 py-2 rounded-full hover:bg-sage-green hover:text-white transition-colors duration-300 shadow-md">
+                        Sign In
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <main class="flex-grow">
+        <section class="relative bg-beige py-20 md:py-32 overflow-hidden rounded-lg m-4 shadow-lg flex items-center justify-center min-h-[calc(100vh-180px)]">
+            <div class="container mx-auto px-4 text-center relative z-10">
+                <h1 class="text-5xl md:text-7xl font-extrabold text-dark-grey leading-tight mb-4">
+                    Welcome!
+                </h1>
+                <p class="text-xl md:text-2xl text-sage-green font-semibold max-w-4xl mx-auto mb-10">
+                    Nourish Your Body, Empower Your Life.
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+                    <button class="bg-sage-green text-white px-8 py-4 text-lg rounded-full hover:bg-sage-green-dark transition-colors duration-300 shadow-xl transform hover:scale-105">
+                        Sign Up
+                    </button>
+                    <button class="border border-sage-green text-sage-green px-8 py-4 text-lg rounded-full hover:bg-sage-green hover:text-white transition-colors duration-300 shadow-xl transform hover:scale-105">
+                        Sign In
+                    </button>
+                </div>
+            </div>
+            <!-- Optional background image/overlay for aesthetic -->
+            <!-- Ensure 'https://placehold.co/1200x800/8FBC8F/FCFCF4?text=Healthy+Living' is accessible or replace with your own image -->
+            <div class="absolute inset-0 bg-cover bg-center opacity-10" style="background-image: url('https://placehold.co/1200x800/8FBC8F/FCFCF4?text=Healthy+Living');"></div>
+        </section>
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="bg-dark-grey text-off-white py-6 mt-auto rounded-t-lg">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2023 SmartBite. All rights reserved.</p>
+            <div class="flex justify-center space-x-4 mt-2">
+                <a href="#" class="hover:text-sage-green transition-colors duration-300">Privacy Policy</a>
+                <a href="#" class="hover:text-sage-green transition-colors duration-300">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript for Mobile Menu Toggle -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('active');
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>
